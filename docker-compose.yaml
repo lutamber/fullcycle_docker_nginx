@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+
+  app:
+    build: ./app
+    tty: true
+    volumes: 
+      - ./app:/app
+    networks:
+      - desafio_nginx_network
+    depends_on: 
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes: 
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=desafio_nginx
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - desafio_nginx_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  nginx:
+    build: ./nginx
+    networks:
+      - desafio_nginx_network
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+
+networks:
+  desafio_nginx_network: 
+    driver: bridge  
