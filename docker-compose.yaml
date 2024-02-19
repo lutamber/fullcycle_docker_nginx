@@ -5,6 +5,7 @@ services:
   app:
     build: ./app
     tty: true
+    command: cd /app && npm install
     volumes: 
       - ./app:/app
     networks:
